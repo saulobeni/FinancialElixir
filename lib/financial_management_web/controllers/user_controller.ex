@@ -18,8 +18,9 @@ defmodule FinancialManagementWeb.UserController do
     case Accounts.create_user(user_params) do
       {:ok, user} ->
         conn
-        |> put_flash(:info, "User created successfully.")
-        |> redirect(to: ~p"/users/#{user}")
+        |> put_status(:created)
+        |> put_resp_header("location", ~p"/api/users/#{user}")
+        |> render(:show, user: user)
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, :new, changeset: changeset)
@@ -43,11 +44,13 @@ defmodule FinancialManagementWeb.UserController do
     case Accounts.update_user(user, user_params) do
       {:ok, user} ->
         conn
-        |> put_flash(:info, "User updated successfully.")
-        |> redirect(to: ~p"/users/#{user}")
+        |> put_status(:ok)
+        |> render(:show, user: user)
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, user: user, changeset: changeset)
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(:error, changeset: changeset)
     end
   end
 
