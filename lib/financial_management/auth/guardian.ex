@@ -1,10 +1,9 @@
-defmodule FinancialManagement.Guardian do
+defmodule FinancialManagement.Auth.Guardian do
   use Guardian, otp_app: :financial_management
 
   alias FinancialManagement.Accounts
 
   def subject_for_token(user, _claims) do
-    # "sub" no token
     {:ok, to_string(user.id)}
   end
 

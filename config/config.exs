@@ -36,9 +36,9 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-config :financial_management, FinancialManagement.Guardian,
+config :financial_management, FinancialManagement.Auth.Guardian,
   issuer: "financial_management",
-  secret_key: "SAULOKEY123"
+  secret_key: "Y7NYbrcKZDggYtMwNjJe+1bkzWm79cxwsj/czWk4l3S+E+zXNxdT8xoK/Hen/7hs"
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason

@@ -8,11 +8,15 @@ defmodule FinancialManagementWeb.Router do
   scope "/api", FinancialManagementWeb do
     pipe_through :api
 
+    post "/login", AuthController, :login
+  end
+
+  scope "/api", FinancialManagementWeb do
+    pipe_through [:api, FinancialManagementWeb.AuthPipeline]
+
     resources "/users", UserController, except: [:new, :edit]
     resources "/transactions", TransactionController, except: [:new, :edit]
     resources "/tags", TagController, except: [:new, :edit]
-
-    post "/login", AuthController, :login
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

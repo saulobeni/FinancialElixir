@@ -19,11 +19,14 @@ defmodule FinancialManagementWeb.UserController do
       {:ok, user} ->
         conn
         |> put_status(:created)
-        |> put_resp_header("location", ~p"/api/users/#{user}")
+        # precisa ter UserJSON.show/1
         |> render(:show, user: user)
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+        conn
+        |> put_status(:unprocessable_entity)
+        # precisa ter UserJSON.error/1
+        |> render(:error, changeset: changeset)
     end
   end
 
