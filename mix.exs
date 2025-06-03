@@ -46,7 +46,8 @@ defmodule FinancialManagement.MixProject do
       {:bandit, "~> 1.5"},
       {:bcrypt_elixir, "~> 3.0"},
       {:guardian, "~> 2.0"},
-      {:dns_cluster, "~> 0.1.1"}
+      {:dns_cluster, "~> 0.1.1"},
+      {:cors_plug, "~> 3.0"}
     ]
   end
 

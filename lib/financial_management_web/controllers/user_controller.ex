@@ -44,6 +44,13 @@ defmodule FinancialManagementWeb.UserController do
   def update(conn, %{"id" => id, "user" => user_params}) do
     user = Accounts.get_user!(id)
 
+    user_params =
+      if Map.get(user_params, "password") in [nil, ""] do
+        Map.delete(user_params, "password")
+      else
+        user_params
+      end
+
     case Accounts.update_user(user, user_params) do
       {:ok, user} ->
         conn
@@ -61,8 +68,6 @@ defmodule FinancialManagementWeb.UserController do
     user = Accounts.get_user!(id)
     {:ok, _user} = Accounts.delete_user(user)
 
-    conn
-    |> put_flash(:info, "User deleted successfully.")
-    |> redirect(to: ~p"/users")
+    send_resp(conn, :no_content, "")
   end
 end
