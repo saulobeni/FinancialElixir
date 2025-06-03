@@ -4,37 +4,41 @@ defmodule FinancialManagementWeb.TransactionController do
   alias FinancialManagement.Finance
   alias FinancialManagement.Finance.Transaction
 
+  action_fallback FinancialManagementWeb.FallbackController
+
   def index(conn, _params) do
     transactions = Finance.list_transactions()
-    render(conn, :index, transactions: transactions)
-  end
-
-  def new(conn, _params) do
-    changeset = Finance.change_transaction(%Transaction{})
-    render(conn, :new, changeset: changeset)
-  end
-
-  def create(conn, %{"transaction" => transaction_params}) do
-    case Finance.create_transaction(transaction_params) do
-      {:ok, transaction} ->
-        conn
-        |> put_flash(:info, "Transaction created successfully.")
-        |> redirect(to: ~p"/transactions/#{transaction}")
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
-    end
+    conn
+    |> put_status(:ok)
+    |> render(:index, transactions: transactions)
   end
 
   def show(conn, %{"id" => id}) do
     transaction = Finance.get_transaction!(id)
-    render(conn, :show, transaction: transaction)
+
+    conn
+    |> put_status(:ok)
+    |> render(:show, transaction: transaction)
   end
 
-  def edit(conn, %{"id" => id}) do
-    transaction = Finance.get_transaction!(id)
-    changeset = Finance.change_transaction(transaction)
-    render(conn, :edit, transaction: transaction, changeset: changeset)
+  def create(conn, %{"transaction" => transaction_params}) do
+    current_user = Guardian.Plug.current_resource(conn)
+
+    transaction_params =
+      transaction_params
+      |> Map.put("user_id", current_user.id)
+
+    case Finance.create_transaction(transaction_params) do
+      {:ok, transaction} ->
+        conn
+        |> put_status(:created)
+        |> render(:show, transaction: transaction)
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(:error, changeset: changeset)
+    end
   end
 
   def update(conn, %{"id" => id, "transaction" => transaction_params}) do
@@ -43,20 +47,27 @@ defmodule FinancialManagementWeb.TransactionController do
     case Finance.update_transaction(transaction, transaction_params) do
       {:ok, transaction} ->
         conn
-        |> put_flash(:info, "Transaction updated successfully.")
-        |> redirect(to: ~p"/transactions/#{transaction}")
+        |> put_status(:ok)
+        |> render(:show, transaction: transaction)
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, transaction: transaction, changeset: changeset)
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(:error, changeset: changeset)
     end
   end
 
   def delete(conn, %{"id" => id}) do
     transaction = Finance.get_transaction!(id)
-    {:ok, _transaction} = Finance.delete_transaction(transaction)
 
-    conn
-    |> put_flash(:info, "Transaction deleted successfully.")
-    |> redirect(to: ~p"/transactions")
+    case Finance.delete_transaction(transaction) do
+      {:ok, _transaction} ->
+        send_resp(conn, :no_content, "")
+
+      {:error, _reason} ->
+        conn
+        |> put_status(:internal_server_error)
+        |> json(%{error: "Erro ao excluir a transação"})
+    end
   end
 end
