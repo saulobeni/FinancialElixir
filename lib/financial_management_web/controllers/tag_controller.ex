@@ -4,26 +4,11 @@ defmodule FinancialManagementWeb.TagController do
   alias FinancialManagement.Finance
   alias FinancialManagement.Finance.Tag
 
+  action_fallback FinancialManagementWeb.FallbackController
+
   def index(conn, _params) do
     tags = Finance.list_tags()
     render(conn, :index, tags: tags)
-  end
-
-  def new(conn, _params) do
-    changeset = Finance.change_tag(%Tag{})
-    render(conn, :new, changeset: changeset)
-  end
-
-  def create(conn, %{"tag" => tag_params}) do
-    case Finance.create_tag(tag_params) do
-      {:ok, tag} ->
-        conn
-        |> put_flash(:info, "Tag created successfully.")
-        |> redirect(to: ~p"/tags/#{tag}")
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
-    end
   end
 
   def show(conn, %{"id" => id}) do
@@ -31,23 +16,38 @@ defmodule FinancialManagementWeb.TagController do
     render(conn, :show, tag: tag)
   end
 
-  def edit(conn, %{"id" => id}) do
-    tag = Finance.get_tag!(id)
-    changeset = Finance.change_tag(tag)
-    render(conn, :edit, tag: tag, changeset: changeset)
+  def create(conn, %{"name" => _} = tag_params) do
+    case Finance.create_tag(tag_params) do
+      {:ok, tag} ->
+        conn
+        |> put_status(:created)
+        |> render(:show, tag: tag)
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(:error, changeset: changeset)
+    end
   end
 
-  def update(conn, %{"id" => id, "tag" => tag_params}) do
+  def update(conn, %{"id" => id} = params) do
     tag = Finance.get_tag!(id)
+
+    tag_params =
+      if Map.has_key?(params, "tag"),
+        do: params["tag"],
+        else: Map.drop(params, ["id"])
 
     case Finance.update_tag(tag, tag_params) do
       {:ok, tag} ->
         conn
-        |> put_flash(:info, "Tag updated successfully.")
-        |> redirect(to: ~p"/tags/#{tag}")
+        |> put_status(:ok)
+        |> render(:show, tag: tag)
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, tag: tag, changeset: changeset)
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(:error, changeset: changeset)
     end
   end
 
@@ -55,8 +55,6 @@ defmodule FinancialManagementWeb.TagController do
     tag = Finance.get_tag!(id)
     {:ok, _tag} = Finance.delete_tag(tag)
 
-    conn
-    |> put_flash(:info, "Tag deleted successfully.")
-    |> redirect(to: ~p"/tags")
+    send_resp(conn, :no_content, "")
   end
 end
