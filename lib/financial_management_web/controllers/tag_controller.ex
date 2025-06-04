@@ -11,6 +11,14 @@ defmodule FinancialManagementWeb.TagController do
     render(conn, :index, tags: tags)
   end
 
+  def by_user(conn, %{"user_id" => user_id}) do
+    tags = Finance.list_tags_by_user(user_id)
+
+    conn
+    |> put_status(:ok)
+    |> render(:index, tags: tags)
+  end
+
   def show(conn, %{"id" => id}) do
     tag = Finance.get_tag!(id)
     render(conn, :show, tag: tag)

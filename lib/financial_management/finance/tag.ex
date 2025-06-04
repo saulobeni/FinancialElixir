@@ -12,7 +12,7 @@ defmodule FinancialManagement.Finance.Tag do
   @doc false
   def changeset(tag, attrs) do
     tag
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
+    |> cast(attrs, [:name, :user_id])  # ✅ Adiciona user_id aqui
+    |> validate_required([:name, :user_id])  # ✅ Valida se for obrigatório
   end
 end

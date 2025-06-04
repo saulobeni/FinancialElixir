@@ -15,7 +15,7 @@ defmodule FinancialManagement.Finance.Transaction do
   @doc false
   def changeset(transaction, attrs) do
     transaction
-    |> cast(attrs, [:description, :value, :type, :date])
-    |> validate_required([:description, :value, :type, :date])
+    |> cast(attrs, [:description, :value, :type, :date, :user_id])
+    |> validate_required([:description, :value, :type, :date, :user_id])
   end
 end

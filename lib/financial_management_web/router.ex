@@ -9,11 +9,14 @@ defmodule FinancialManagementWeb.Router do
     pipe_through :api
 
     post "/login", AuthController, :login
+    post "/register", UserController, :create
   end
 
   scope "/api", FinancialManagementWeb do
     pipe_through [:api, FinancialManagementWeb.AuthPipeline]
 
+    get "/tags/user/:user_id", TagController, :by_user
+    get "/transactions/user/:user_id", TransactionController, :by_user
     resources "/users", UserController, except: [:new, :edit]
     resources "/transactions", TransactionController, except: [:new, :edit]
     resources "/tags", TagController, except: [:new, :edit]

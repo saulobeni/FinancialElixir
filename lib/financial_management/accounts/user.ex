@@ -15,18 +15,9 @@ defmodule FinancialManagement.Accounts.User do
   def changeset(user, attrs) do
     user
     |> cast(attrs, [:name, :email, :password])
-    |> validate_required([:name, :email])
-    |> maybe_validate_password()
+    |> validate_required([:name, :email, :password])
+    |> validate_length(:password, min: 6)
     |> put_hashed_password()
-  end
-
-  defp maybe_validate_password(changeset) do
-    if get_field(changeset, :password) do
-      changeset
-      |> validate_length(:password, min: 6)
-    else
-      changeset
-    end
   end
 
   defp put_hashed_password(changeset) do

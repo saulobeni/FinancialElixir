@@ -8,6 +8,12 @@ defmodule FinancialManagement.Finance do
 
   alias FinancialManagement.Finance.Transaction
 
+  def list_transactions_by_user(user_id) do
+    Transaction
+    |> where(user_id: ^user_id)
+    |> Repo.all()
+  end
+
   @doc """
   Returns the list of transactions.
 
@@ -115,6 +121,12 @@ defmodule FinancialManagement.Finance do
   """
   def list_tags do
     Repo.all(Tag)
+  end
+
+  def list_tags_by_user(user_id) do
+    Tag
+    |> where(user_id: ^user_id)
+    |> Repo.all()
   end
 
   @doc """

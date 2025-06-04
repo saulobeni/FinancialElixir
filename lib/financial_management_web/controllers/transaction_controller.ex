@@ -8,6 +8,15 @@ defmodule FinancialManagementWeb.TransactionController do
 
   def index(conn, _params) do
     transactions = Finance.list_transactions()
+
+    conn
+    |> put_status(:ok)
+    |> render(:index, transactions: transactions)
+  end
+
+  def by_user(conn, %{"user_id" => user_id}) do
+    transactions = Finance.list_transactions_by_user(user_id)
+
     conn
     |> put_status(:ok)
     |> render(:index, transactions: transactions)
@@ -22,22 +31,26 @@ defmodule FinancialManagementWeb.TransactionController do
   end
 
   def create(conn, %{"transaction" => transaction_params}) do
-    current_user = Guardian.Plug.current_resource(conn)
-
-    transaction_params =
-      transaction_params
-      |> Map.put("user_id", current_user.id)
-
-    case Finance.create_transaction(transaction_params) do
-      {:ok, transaction} ->
+    case Guardian.Plug.current_resource(conn) do
+      nil ->
         conn
-        |> put_status(:created)
-        |> render(:show, transaction: transaction)
+        |> put_status(:unauthorized)
+        |> json(%{error: "Usuário não autenticado"})
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> render(:error, changeset: changeset)
+      current_user ->
+        params_with_user = Map.put(transaction_params, "user_id", current_user.id)
+
+        case Finance.create_transaction(params_with_user) do
+          {:ok, transaction} ->
+            conn
+            |> put_status(:created)
+            |> render(:show, transaction: transaction)
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(:error, changeset: changeset)
+        end
     end
   end
 
