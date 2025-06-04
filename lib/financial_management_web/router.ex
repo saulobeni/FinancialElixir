@@ -15,6 +15,7 @@ defmodule FinancialManagementWeb.Router do
   scope "/api", FinancialManagementWeb do
     pipe_through [:api, FinancialManagementWeb.AuthPipeline]
 
+    post "/transactions/:transaction_id/tags", TransactionController, :add_tags
     get "/tags/user/:user_id", TagController, :by_user
     get "/transactions/user/:user_id", TransactionController, :by_user
     resources "/users", UserController, except: [:new, :edit]

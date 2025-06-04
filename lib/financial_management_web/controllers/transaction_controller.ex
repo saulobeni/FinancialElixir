@@ -14,6 +14,20 @@ defmodule FinancialManagementWeb.TransactionController do
     |> render(:index, transactions: transactions)
   end
 
+  def add_tags(conn, %{"transaction_id" => transaction_id, "tag_ids" => tag_ids}) do
+    case Finance.add_tags_to_transaction(transaction_id, tag_ids) do
+      {:ok, transaction} ->
+        conn
+        |> put_status(:ok)
+        |> render(:show, transaction: transaction)
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(:error, changeset: changeset)
+    end
+  end
+
   def by_user(conn, %{"user_id" => user_id}) do
     transactions = Finance.list_transactions_by_user(user_id)
 

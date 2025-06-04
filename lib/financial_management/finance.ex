@@ -8,6 +8,23 @@ defmodule FinancialManagement.Finance do
 
   alias FinancialManagement.Finance.Transaction
 
+  def add_tags_to_transaction(transaction_id, tag_ids) do
+    transaction =
+      Repo.get!(FinancialManagement.Finance.Transaction, transaction_id)
+      |> Repo.preload(:tags)
+
+    tags =
+      Repo.all(
+        from t in FinancialManagement.Finance.Tag,
+          where: t.id in ^tag_ids
+      )
+
+    transaction
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:tags, tags)
+    |> Repo.update()
+  end
+
   def list_transactions_by_user(user_id) do
     Transaction
     |> where(user_id: ^user_id)
