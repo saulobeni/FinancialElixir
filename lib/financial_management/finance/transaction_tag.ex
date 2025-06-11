@@ -16,6 +16,9 @@ defmodule FinancialManagement.Finance.TransactionTag do
     transaction_tag
     |> cast(attrs, [:transaction_id, :tag_id])
     |> validate_required([:transaction_id, :tag_id])
-    |> unique_constraint([:transaction_id, :tag_id])
+    |> unique_constraint(:transaction_tag,
+      name: :transactions_tags_transaction_id_tag_id_index,
+      message: "Esta tag já está associada à transação"
+    )
   end
 end

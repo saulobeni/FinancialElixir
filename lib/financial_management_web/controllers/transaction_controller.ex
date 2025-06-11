@@ -28,12 +28,26 @@ defmodule FinancialManagementWeb.TransactionController do
     end
   end
 
+  def remove_tag(conn, %{"transaction_id" => transaction_id, "tag_id" => tag_id}) do
+    case Finance.remove_tag_from_transaction(transaction_id, tag_id) do
+      {:ok, transaction} ->
+        conn
+        |> put_status(:ok)
+        |> render(:show, transaction: transaction)
+
+      {:error, reason} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Erro ao remover tag: #{reason}"})
+    end
+  end
+
   def by_user(conn, %{"user_id" => user_id}) do
     transactions = Finance.list_transactions_by_user(user_id)
 
     conn
     |> put_status(:ok)
-    |> render(:index, transactions: transactions)
+    |> render(FinancialManagementWeb.TransactionView, "index.json", transactions: transactions)
   end
 
   def show(conn, %{"id" => id}) do

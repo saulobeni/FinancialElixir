@@ -2,7 +2,7 @@ defmodule FinancialManagement.Finance.Transaction do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias FinancialManagement.Finance.Tag
+  alias FinancialManagement.Finance.{Tag, TransactionTag}
 
   schema "transactions" do
     field :type, :string
@@ -11,11 +11,13 @@ defmodule FinancialManagement.Finance.Transaction do
     field :description, :string
     field :user_id, :id
 
-    has_many :transaction_tags, FinancialManagement.Finance.TransactionTag
+    has_many :transaction_tags, TransactionTag
 
-    many_to_many :tags, FinancialManagement.Finance.Tag,
-      join_through: FinancialManagement.Finance.TransactionTag,
-      on_replace: :delete
+    many_to_many :tags, Tag,
+      join_through: TransactionTag,
+      join_keys: [transaction_id: :id, tag_id: :id],
+      on_replace: :delete,
+      unique: true
 
     timestamps(type: :utc_datetime)
   end

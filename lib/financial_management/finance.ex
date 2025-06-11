@@ -25,9 +25,25 @@ defmodule FinancialManagement.Finance do
     |> Repo.update()
   end
 
+  def remove_tag_from_transaction(transaction_id, tag_id) do
+    with %Transaction{} = transaction <-
+           Repo.get(Transaction, transaction_id) |> Repo.preload(:tags),
+         %{} = tag <- Repo.get(FinancialManagement.Finance.Tag, tag_id) do
+      updated_tags = Enum.reject(transaction.tags, fn t -> t.id == tag.id end)
+
+      transaction
+      |> Ecto.Changeset.change()
+      |> Ecto.Changeset.put_assoc(:tags, updated_tags)
+      |> Repo.update()
+    else
+      nil -> {:error, "Transação ou tag não encontrada"}
+    end
+  end
+
   def list_transactions_by_user(user_id) do
-    Transaction
-    |> where(user_id: ^user_id)
+    FinancialManagement.Finance.Transaction
+    |> where([t], t.user_id == ^user_id)
+    |> preload(:tags)
     |> Repo.all()
   end
 
